@@ -46,7 +46,6 @@ export default function AnggotaPage() {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' })
     const W = doc.internal.pageSize.getWidth()
 
-    // Header biru
     doc.setFillColor(37, 99, 235)
     doc.roundedRect(0, 0, W, 38, 0, 0, 'F')
 
@@ -59,7 +58,6 @@ export default function AnggotaPage() {
     doc.setFont('helvetica', 'normal')
     doc.text(`Periode: Oktober ${tahunAktif.tahun_mulai} – September ${tahunAktif.tahun_selesai}`, W / 2, 19, { align: 'center' })
 
-    // Nama anggota
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
     doc.text(nama, W / 2, 30, { align: 'center' })
@@ -68,7 +66,6 @@ export default function AnggotaPage() {
     doc.setFont('helvetica', 'normal')
     doc.text(`Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, W / 2, 36, { align: 'center' })
 
-    // Tabel bulan
     const rows = BULAN_IURAN.map(({ bulan, nama: namaBulan }) => {
       const bayar = mapBulan[bulan]
       return [
@@ -106,7 +103,6 @@ export default function AnggotaPage() {
       alternateRowStyles: { fillColor: [243, 250, 255] },
     })
 
-    // Ringkasan bawah
     const finalY = doc.lastAutoTable.finalY + 5
     doc.setFillColor(243, 250, 255)
     doc.roundedRect(10, finalY, W - 20, 22, 2, 2, 'F')
@@ -160,90 +156,100 @@ export default function AnggotaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      {/* Navbar */}
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Droplets size={20} className="text-blue-600" />
             <span className="font-bold text-gray-800">Iuran Air</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-xs font-medium px-2 py-1 rounded-full ${ROLE_COLOR[profile?.role]}`}>
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLOR[profile?.role]}`}>
               {ROLE_LABEL[profile?.role]}
             </span>
-            <button onClick={signOut} className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600">
-              <LogOut size={15} />
+            <button onClick={signOut} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+              <LogOut size={16} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-5">
-        {/* Header Info */}
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white mb-4 shadow-md">
-          <p className="text-blue-200 text-xs mb-1">Halo,</p>
-          <h1 className="text-xl font-bold mb-1">{nama}</h1>
-          <div className="flex items-center justify-between mt-3">
-            <div className="relative">
+      <main className="max-w-lg mx-auto px-3 py-4 space-y-3">
+
+        {/* Header Card */}
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-4 text-white shadow-md">
+          <p className="text-blue-200 text-xs">Halo,</p>
+          <h1 className="text-xl font-bold mt-0.5 leading-tight">{nama}</h1>
+
+          {/* Dropdown + Download */}
+          <div className="flex items-center gap-2 mt-3">
+            <div className="relative flex-1 min-w-0">
               <select
                 value={tahunAktif?.id || ''}
                 onChange={e => setTahunAktif(tahunList.find(t => t.id === e.target.value))}
-                className="appearance-none bg-white/20 border border-white/30 text-white text-sm px-3 py-1.5 pr-6 rounded-lg focus:outline-none"
+                className="w-full appearance-none bg-white/20 border border-white/30 text-white text-sm font-medium px-3 py-2 pr-7 rounded-xl focus:outline-none truncate"
               >
                 {tahunList.map(t => (
-                  <option key={t.id} value={t.id} className="text-gray-800">
-                    Tahun {t.label} ({t.tahun_mulai}/{t.tahun_selesai})
+                  <option key={t.id} value={t.id} className="text-gray-800 bg-white">
+                    {t.tahun_mulai} – {t.tahun_selesai}
                   </option>
                 ))}
               </select>
-              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none" />
+              <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none" />
             </div>
             <button
               onClick={downloadKartu}
-              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-sm font-semibold px-3 py-2 rounded-xl transition-colors whitespace-nowrap shadow-sm"
             >
-              <Download size={13} /> Download Kartu
+              <Download size={14} />
+              Kartu
             </button>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-sm text-center">
-            <p className="text-xl font-bold text-blue-600">{formatRupiah(totalBayar)}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Total Dibayar</p>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-sm text-center col-span-1">
+            <p className="text-base font-bold text-blue-600 leading-tight">{formatRupiah(totalBayar)}</p>
+            <p className="text-xs text-gray-400 mt-1">Total Dibayar</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-sm text-center">
-            <p className="text-2xl font-bold text-green-600">{lunasCount}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Bulan Lunas</p>
+            <p className="text-2xl font-bold text-green-500">{lunasCount}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Lunas</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-3 shadow-sm text-center">
             <p className="text-2xl font-bold text-red-500">{belumCount}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Belum Bayar</p>
+            <p className="text-xs text-gray-400 mt-0.5">Belum</p>
           </div>
         </div>
 
         {/* Status per Bulan */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-800">
-              Status Pembayaran
-              <span className="ml-2 text-xs font-normal text-gray-400">
-                Okt {tahunAktif?.tahun_mulai} – Sep {tahunAktif?.tahun_selesai}
-              </span>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <p className="text-sm font-semibold text-gray-800">Status Pembayaran</p>
+            <p className="text-xs text-gray-400">
+              Okt {tahunAktif?.tahun_mulai} – Sep {tahunAktif?.tahun_selesai}
             </p>
           </div>
+
           {loading ? (
-            <p className="text-center text-gray-400 py-8 text-sm">Memuat...</p>
+            <div className="py-12 flex flex-col items-center gap-2">
+              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-gray-400">Memuat data...</p>
+            </div>
           ) : (
             <div className="divide-y divide-gray-100">
               {BULAN_IURAN.map(({ bulan, nama: namaBulan }) => {
                 const bayar = mapBulan[bulan]
                 return (
-                  <div key={bulan} className={`flex items-center justify-between px-4 py-3 ${bayar ? 'bg-green-50/50' : ''}`}>
+                  <div
+                    key={bulan}
+                    className={`flex items-center justify-between px-4 py-3.5 ${bayar ? 'bg-green-50/40' : ''}`}
+                  >
                     <div className="flex items-center gap-3">
                       {bayar
-                        ? <CheckCircle2 size={18} className="text-green-500 flex-none" />
-                        : <XCircle size={18} className="text-gray-300 flex-none" />
+                        ? <CheckCircle2 size={20} className="text-green-500 flex-none" />
+                        : <XCircle size={20} className="text-gray-200 flex-none" />
                       }
                       <span className={`text-sm font-medium ${bayar ? 'text-gray-800' : 'text-gray-400'}`}>
                         {namaBulan}
@@ -254,13 +260,13 @@ export default function AnggotaPage() {
                         <>
                           <p className="text-sm font-semibold text-green-600">{formatRupiah(bayar.nominal)}</p>
                           {bayar.tanggal_bayar && (
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-gray-400 mt-0.5">
                               {new Date(bayar.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </p>
                           )}
                         </>
                       ) : (
-                        <p className="text-sm text-gray-400">Belum bayar</p>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Belum bayar</span>
                       )}
                     </div>
                   </div>
@@ -269,6 +275,8 @@ export default function AnggotaPage() {
             </div>
           )}
         </div>
+
+        <p className="text-center text-xs text-gray-300 pb-2">Iuran Air &copy; {new Date().getFullYear()}</p>
       </main>
     </div>
   )
