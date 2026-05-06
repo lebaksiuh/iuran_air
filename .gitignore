@@ -1,0 +1,18 @@
+# App
+iuran-air-app/node_modules
+iuran-air-app/dist
+iuran-air-app/.env
+iuran-air-app/.env.local
+iuran-air-app/*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Excel & data sensitif
+*.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
