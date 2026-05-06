@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Droplets, LogOut, CheckCircle2, XCircle, ChevronDown } from 'lucide-react'
+import { Droplets, LogOut, CheckCircle2, XCircle, ChevronDown, Download } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { formatRupiah, BULAN_IURAN, ROLE_LABEL, ROLE_COLOR } from '../lib/format'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default function AnggotaPage() {
   const { profile, signOut } = useAuth()
@@ -38,6 +40,98 @@ export default function AnggotaPage() {
   const totalBayar = pembayaran.reduce((a, b) => a + b.nominal, 0)
   const lunasCount = pembayaran.length
   const belumCount = 12 - lunasCount
+  const nama = profile?.pengguna?.nama || profile?.nama || ''
+
+  function downloadKartu() {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' })
+    const W = doc.internal.pageSize.getWidth()
+
+    // Header biru
+    doc.setFillColor(37, 99, 235)
+    doc.roundedRect(0, 0, W, 38, 0, 0, 'F')
+
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    doc.text('KARTU IURAN AIR', W / 2, 12, { align: 'center' })
+
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Periode: Oktober ${tahunAktif.tahun_mulai} – September ${tahunAktif.tahun_selesai}`, W / 2, 19, { align: 'center' })
+
+    // Nama anggota
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text(nama, W / 2, 30, { align: 'center' })
+
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, W / 2, 36, { align: 'center' })
+
+    // Tabel bulan
+    const rows = BULAN_IURAN.map(({ bulan, nama: namaBulan }) => {
+      const bayar = mapBulan[bulan]
+      return [
+        namaBulan,
+        bayar ? 'LUNAS' : 'Belum bayar',
+        bayar ? formatRupiah(bayar.nominal) : '-',
+        bayar?.tanggal_bayar
+          ? new Date(bayar.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+          : '',
+      ]
+    })
+
+    autoTable(doc, {
+      head: [['Bulan', 'Status', 'Nominal', 'Tgl Bayar']],
+      body: rows,
+      startY: 42,
+      styles: { fontSize: 8, cellPadding: 2.5 },
+      headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold', halign: 'center' },
+      columnStyles: {
+        0: { cellWidth: 28 },
+        1: { cellWidth: 28, halign: 'center' },
+        2: { cellWidth: 32, halign: 'right' },
+        3: { cellWidth: 30, halign: 'center' },
+      },
+      didParseCell(data) {
+        if (data.column.index === 1 && data.section === 'body') {
+          if (data.cell.raw === 'LUNAS') {
+            data.cell.styles.textColor = [22, 163, 74]
+            data.cell.styles.fontStyle = 'bold'
+          } else {
+            data.cell.styles.textColor = [156, 163, 175]
+          }
+        }
+      },
+      alternateRowStyles: { fillColor: [243, 250, 255] },
+    })
+
+    // Ringkasan bawah
+    const finalY = doc.lastAutoTable.finalY + 5
+    doc.setFillColor(243, 250, 255)
+    doc.roundedRect(10, finalY, W - 20, 22, 2, 2, 'F')
+    doc.setDrawColor(37, 99, 235)
+    doc.setLineWidth(0.3)
+    doc.roundedRect(10, finalY, W - 20, 22, 2, 2, 'S')
+
+    doc.setTextColor(55, 65, 81)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.text('Bulan Lunas', 16, finalY + 7)
+    doc.text('Belum Bayar', 16, finalY + 14)
+    doc.text('Total Dibayar', 16, finalY + 20)
+
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(22, 163, 74)
+    doc.text(`${lunasCount} bulan`, W - 16, finalY + 7, { align: 'right' })
+    doc.setTextColor(239, 68, 68)
+    doc.text(`${belumCount} bulan`, W - 16, finalY + 14, { align: 'right' })
+    doc.setTextColor(37, 99, 235)
+    doc.setFontSize(9)
+    doc.text(formatRupiah(totalBayar), W - 16, finalY + 20, { align: 'right' })
+
+    doc.save(`kartu-iuran-${nama.toLowerCase().replace(/\s+/g, '-')}-${tahunAktif.tahun_mulai}.pdf`)
+  }
 
   if (!profile?.pengguna_id) {
     return (
@@ -87,8 +181,8 @@ export default function AnggotaPage() {
         {/* Header Info */}
         <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white mb-4 shadow-md">
           <p className="text-blue-200 text-xs mb-1">Halo,</p>
-          <h1 className="text-xl font-bold mb-1">{profile?.pengguna?.nama || profile?.nama}</h1>
-          <div className="flex items-center gap-2 mt-3">
+          <h1 className="text-xl font-bold mb-1">{nama}</h1>
+          <div className="flex items-center justify-between mt-3">
             <div className="relative">
               <select
                 value={tahunAktif?.id || ''}
@@ -103,6 +197,12 @@ export default function AnggotaPage() {
               </select>
               <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 pointer-events-none" />
             </div>
+            <button
+              onClick={downloadKartu}
+              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Download size={13} /> Download Kartu
+            </button>
           </div>
         </div>
 
@@ -136,7 +236,7 @@ export default function AnggotaPage() {
             <p className="text-center text-gray-400 py-8 text-sm">Memuat...</p>
           ) : (
             <div className="divide-y divide-gray-100">
-              {BULAN_IURAN.map(({ bulan, nama }) => {
+              {BULAN_IURAN.map(({ bulan, nama: namaBulan }) => {
                 const bayar = mapBulan[bulan]
                 return (
                   <div key={bulan} className={`flex items-center justify-between px-4 py-3 ${bayar ? 'bg-green-50/50' : ''}`}>
@@ -146,7 +246,7 @@ export default function AnggotaPage() {
                         : <XCircle size={18} className="text-gray-300 flex-none" />
                       }
                       <span className={`text-sm font-medium ${bayar ? 'text-gray-800' : 'text-gray-400'}`}>
-                        {nama}
+                        {namaBulan}
                       </span>
                     </div>
                     <div className="text-right">
