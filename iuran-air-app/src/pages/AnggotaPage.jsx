@@ -153,9 +153,11 @@ export default function AnggotaPage() {
                       {bayar ? (
                         <>
                           <p className="text-sm font-semibold text-green-600">{formatRupiah(bayar.nominal)}</p>
-                          <p className="text-xs text-gray-400">
-                            {new Date(bayar.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
+                          {bayar.tanggal_bayar && (
+                            <p className="text-xs text-gray-400">
+                              {new Date(bayar.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
+                          )}
                         </>
                       ) : (
                         <p className="text-sm text-gray-400">Belum bayar</p>
