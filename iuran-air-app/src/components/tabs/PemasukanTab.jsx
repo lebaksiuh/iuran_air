@@ -4,14 +4,13 @@ import { supabase } from '../../lib/supabase'
 import { formatRupiah } from '../../lib/format'
 import KasModal from '../modals/KasModal'
 
-const PER_PAGE = 10
-
 export default function PemasukanTab() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
 
   async function fetchData() {
     setLoading(true)
@@ -36,15 +35,15 @@ export default function PemasukanTab() {
       .toLowerCase().includes(search.toLowerCase())
   )
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
+  const showAll = perPage === 'all'
+  const itemsPerPage = showAll ? filtered.length || 1 : perPage
+  const totalPages = showAll ? 1 : Math.max(1, Math.ceil(filtered.length / itemsPerPage))
   const safePage = Math.min(page, totalPages)
-  const startIdx = (safePage - 1) * PER_PAGE
-  const paginated = filtered.slice(startIdx, startIdx + PER_PAGE)
+  const startIdx = showAll ? 0 : (safePage - 1) * itemsPerPage
+  const paginated = filtered.slice(startIdx, startIdx + itemsPerPage)
 
-  function handleSearch(val) {
-    setSearch(val)
-    setPage(1)
-  }
+  function handleSearch(val) { setSearch(val); setPage(1) }
+  function handlePerPage(val) { setPerPage(val === 'all' ? 'all' : Number(val)); setPage(1) }
 
   return (
     <div>
@@ -61,7 +60,6 @@ export default function PemasukanTab() {
         </button>
       </div>
 
-      {/* Search */}
       <div className="relative mb-3">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
@@ -122,28 +120,41 @@ export default function PemasukanTab() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50">
-            <p className="text-xs text-gray-500">
-              {startIdx + 1}–{Math.min(startIdx + PER_PAGE, filtered.length)} dari {filtered.length} data
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage(p => p - 1)}
-                disabled={safePage === 1}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        {/* Pagination bar — selalu tampil jika ada data */}
+        {!loading && data.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 bg-gray-50 gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Tampilkan:</span>
+              <select
+                value={perPage}
+                onChange={e => handlePerPage(e.target.value)}
+                className="text-xs border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-400 bg-white"
               >
-                <ChevronLeft size={16} />
-              </button>
-              <span className="text-xs text-gray-600 px-2 font-medium">{safePage} / {totalPages}</span>
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={safePage === totalPages}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={16} />
-              </button>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value="all">Semua</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-gray-500">
+                {showAll
+                  ? `Semua ${filtered.length} data`
+                  : `${filtered.length === 0 ? 0 : startIdx + 1}–${Math.min(startIdx + itemsPerPage, filtered.length)} dari ${filtered.length}`}
+              </p>
+              {!showAll && totalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button onClick={() => setPage(p => p - 1)} disabled={safePage === 1}
+                    className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                    <ChevronLeft size={15} />
+                  </button>
+                  <span className="text-xs text-gray-600 font-medium px-1">{safePage} / {totalPages}</span>
+                  <button onClick={() => setPage(p => p + 1)} disabled={safePage === totalPages}
+                    className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
