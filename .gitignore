@@ -12,6 +12,7 @@ __pycache__/
 
 # Excel & data sensitif
 *.xlsx
+*.csv
 
 # OS
 .DS_Store
