@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Pencil, Trash2, Info, KeyRound } from 'lucide-react'
+import { Pencil, Trash2, Info, KeyRound, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { ROLE_LABEL, ROLE_COLOR } from '../../lib/format'
 import { useAuth } from '../../contexts/AuthContext'
 import UserModal from '../modals/UserModal'
 import GantiPasswordModal from '../modals/GantiPasswordModal'
+
+const PER_PAGE = 10
 
 export default function UserManagementTab() {
   const { user: currentUser } = useAuth()
@@ -13,6 +15,8 @@ export default function UserManagementTab() {
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(null)
   const [resetModal, setResetModal] = useState(null)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
 
   async function fetchData() {
     setLoading(true)
@@ -34,6 +38,25 @@ export default function UserManagementTab() {
     fetchData()
   }
 
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase()
+    return (
+      u.nama?.toLowerCase().includes(q) ||
+      ROLE_LABEL[u.role]?.toLowerCase().includes(q) ||
+      u.pengguna?.nama?.toLowerCase().includes(q)
+    )
+  })
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
+  const safePage = Math.min(page, totalPages)
+  const startIdx = (safePage - 1) * PER_PAGE
+  const paginated = filtered.slice(startIdx, startIdx + PER_PAGE)
+
+  function handleSearch(val) {
+    setSearch(val)
+    setPage(1)
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -48,9 +71,7 @@ export default function UserManagementTab() {
         <Info size={16} className="text-amber-500 flex-none mt-0.5" />
         <div className="text-xs text-amber-800 space-y-1">
           <p className="font-semibold">Cara menambah user baru:</p>
-          <p>
-            Jalankan script Python yang sudah tersedia di folder project:
-          </p>
+          <p>Jalankan script Python yang sudah tersedia di folder project:</p>
           <ul className="list-disc ml-4 space-y-0.5">
             <li><code className="bg-amber-100 px-1 rounded">buat_akun_staff.py</code> — untuk Ketua RT, Bendahara, Penagih</li>
             <li><code className="bg-amber-100 px-1 rounded">buat_akun_anggota.py</code> — untuk semua anggota sekaligus</li>
@@ -61,63 +82,102 @@ export default function UserManagementTab() {
         </div>
       </div>
 
+      {/* Search */}
+      <div className="relative mb-3">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          value={search}
+          onChange={e => handleSearch(e.target.value)}
+          placeholder="Cari nama, role, atau pengguna air..."
+          className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[500px]">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nama</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Pengguna Air</th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
-              <tr><td colSpan={4} className="text-center py-10 text-gray-400">Memuat...</td></tr>
-            ) : users.length === 0 ? (
-              <tr><td colSpan={4} className="text-center py-10 text-gray-400">Belum ada user. Jalankan script Python untuk membuat akun.</td></tr>
-            ) : users.map(u => (
-              <tr key={u.id} className={`hover:bg-gray-50 ${u.id === currentUser?.id ? 'bg-blue-50/50' : ''}`}>
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  {u.nama}
-                  {u.id === currentUser?.id && (
-                    <span className="ml-2 text-xs text-blue-500">(Anda)</span>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLOR[u.role]}`}>
-                    {ROLE_LABEL[u.role]}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-600 text-xs">
-                  {u.pengguna?.nama || <span className="text-gray-300">–</span>}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => setModal(u)}
-                      className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Edit role / hubungkan pengguna">
-                      <Pencil size={14} />
-                    </button>
-                    <button onClick={() => setResetModal(u)}
-                      className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                      title="Reset password">
-                      <KeyRound size={14} />
-                    </button>
-                    <button onClick={() => handleDelete(u.id, u.nama)}
-                      disabled={u.id === currentUser?.id}
-                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="Hapus user">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </td>
+          <table className="w-full text-sm min-w-[500px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nama</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Pengguna Air</th>
+                <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr><td colSpan={4} className="text-center py-10 text-gray-400">Memuat...</td></tr>
+              ) : paginated.length === 0 ? (
+                <tr><td colSpan={4} className="text-center py-10 text-gray-400">
+                  {search ? 'Tidak ada hasil pencarian' : 'Belum ada user. Jalankan script Python untuk membuat akun.'}
+                </td></tr>
+              ) : paginated.map(u => (
+                <tr key={u.id} className={`hover:bg-gray-50 ${u.id === currentUser?.id ? 'bg-blue-50/50' : ''}`}>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {u.nama}
+                    {u.id === currentUser?.id && (
+                      <span className="ml-2 text-xs text-blue-500">(Anda)</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLOR[u.role]}`}>
+                      {ROLE_LABEL[u.role]}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 text-xs">
+                    {u.pengguna?.nama || <span className="text-gray-300">–</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => setModal(u)}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit role / hubungkan pengguna">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => setResetModal(u)}
+                        className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                        title="Reset password">
+                        <KeyRound size={14} />
+                      </button>
+                      <button onClick={() => handleDelete(u.id, u.nama)}
+                        disabled={u.id === currentUser?.id}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Hapus user">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50">
+            <p className="text-xs text-gray-500">
+              {startIdx + 1}–{Math.min(startIdx + PER_PAGE, filtered.length)} dari {filtered.length} user
+            </p>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(p => p - 1)}
+                disabled={safePage === 1}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-xs text-gray-600 px-2 font-medium">{safePage} / {totalPages}</span>
+              <button
+                onClick={() => setPage(p => p + 1)}
+                disabled={safePage === totalPages}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {modal && (
