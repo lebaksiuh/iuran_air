@@ -53,7 +53,7 @@ export default function LaporanTab() {
           {/* Saldo Kas — kartu utama */}
           <div className={`rounded-2xl p-6 mb-5 text-center shadow-sm border ${saldo >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
             <p className="text-sm text-gray-500 mb-1">Saldo Kas</p>
-            <p className={`text-4xl font-bold tracking-tight ${saldo >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`text-2xl sm:text-4xl font-bold tracking-tight break-all ${saldo >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {formatRupiah(saldo)}
             </p>
             <p className="text-xs text-gray-400 mt-2">
@@ -62,18 +62,18 @@ export default function LaporanTab() {
           </div>
 
           {/* 3 kartu ringkasan */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="bg-blue-50 rounded-xl border border-blue-100 p-4 text-center">
-              <p className="text-xs text-blue-500 mb-1">Total Iuran</p>
-              <p className="text-base font-bold text-blue-700">{formatRupiah(totalSemuaIuran)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
+            <div className="bg-blue-50 rounded-xl border border-blue-100 px-4 py-3 flex sm:flex-col items-center sm:text-center justify-between sm:justify-start gap-2">
+              <p className="text-xs text-blue-500 sm:mb-1 whitespace-nowrap">Total Iuran</p>
+              <p className="text-sm font-bold text-blue-700">{formatRupiah(totalSemuaIuran)}</p>
             </div>
-            <div className="bg-green-50 rounded-xl border border-green-100 p-4 text-center">
-              <p className="text-xs text-green-600 mb-1">Pemasukan Lain</p>
-              <p className="text-base font-bold text-green-700">{formatRupiah(totalPemasukan)}</p>
+            <div className="bg-green-50 rounded-xl border border-green-100 px-4 py-3 flex sm:flex-col items-center sm:text-center justify-between sm:justify-start gap-2">
+              <p className="text-xs text-green-600 sm:mb-1 whitespace-nowrap">Pemasukan Lain</p>
+              <p className="text-sm font-bold text-green-700">{formatRupiah(totalPemasukan)}</p>
             </div>
-            <div className="bg-red-50 rounded-xl border border-red-100 p-4 text-center">
-              <p className="text-xs text-red-500 mb-1">Pengeluaran</p>
-              <p className="text-base font-bold text-red-600">{formatRupiah(totalPengeluaran)}</p>
+            <div className="bg-red-50 rounded-xl border border-red-100 px-4 py-3 flex sm:flex-col items-center sm:text-center justify-between sm:justify-start gap-2">
+              <p className="text-xs text-red-500 sm:mb-1 whitespace-nowrap">Pengeluaran</p>
+              <p className="text-sm font-bold text-red-600">{formatRupiah(totalPengeluaran)}</p>
             </div>
           </div>
 
