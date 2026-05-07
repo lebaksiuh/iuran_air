@@ -62,7 +62,8 @@ export default function UserManagementTab() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[500px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nama</th>
@@ -116,6 +117,7 @@ export default function UserManagementTab() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {modal && (

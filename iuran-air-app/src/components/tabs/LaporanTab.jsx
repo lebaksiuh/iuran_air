@@ -61,19 +61,23 @@ export default function LaporanTab() {
             </p>
           </div>
 
-          {/* 3 kartu ringkasan */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
-            <div className="bg-blue-50 rounded-xl border border-blue-100 px-4 py-3 flex sm:flex-col items-center sm:text-center justify-between sm:justify-start gap-2">
-              <p className="text-xs text-blue-500 sm:mb-1 whitespace-nowrap">Total Iuran</p>
-              <p className="text-sm font-bold text-blue-700">{formatRupiah(totalSemuaIuran)}</p>
+          {/* 4 kartu ringkasan */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
+            <div className="bg-blue-50 rounded-xl border border-blue-100 p-3 text-center">
+              <p className="text-[11px] text-blue-500 mb-1">Total Iuran</p>
+              <p className="text-sm font-bold text-blue-700 leading-tight">{formatRupiah(totalSemuaIuran)}</p>
             </div>
-            <div className="bg-green-50 rounded-xl border border-green-100 px-4 py-3 flex sm:flex-col items-center sm:text-center justify-between sm:justify-start gap-2">
-              <p className="text-xs text-green-600 sm:mb-1 whitespace-nowrap">Pemasukan Lain</p>
-              <p className="text-sm font-bold text-green-700">{formatRupiah(totalPemasukan)}</p>
+            <div className="bg-green-50 rounded-xl border border-green-100 p-3 text-center">
+              <p className="text-[11px] text-green-600 mb-1">Pemasukan Lain</p>
+              <p className="text-sm font-bold text-green-700 leading-tight">{formatRupiah(totalPemasukan)}</p>
             </div>
-            <div className="bg-red-50 rounded-xl border border-red-100 px-4 py-3 flex sm:flex-col items-center sm:text-center justify-between sm:justify-start gap-2">
-              <p className="text-xs text-red-500 sm:mb-1 whitespace-nowrap">Pengeluaran</p>
-              <p className="text-sm font-bold text-red-600">{formatRupiah(totalPengeluaran)}</p>
+            <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-3 text-center">
+              <p className="text-[11px] text-emerald-600 mb-1">Total Pemasukan</p>
+              <p className="text-sm font-bold text-emerald-700 leading-tight">{formatRupiah(totalPemasukan_all)}</p>
+            </div>
+            <div className="bg-red-50 rounded-xl border border-red-100 p-3 text-center">
+              <p className="text-[11px] text-red-500 mb-1">Pengeluaran</p>
+              <p className="text-sm font-bold text-red-600 leading-tight">{formatRupiah(totalPengeluaran)}</p>
             </div>
           </div>
 
