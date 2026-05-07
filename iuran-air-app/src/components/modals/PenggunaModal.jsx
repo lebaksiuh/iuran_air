@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { formatRupiah } from '../../lib/format'
+import { logAktivitas } from '../../lib/logger'
 
 const TARIF_OPTIONS = [20000, 30000, 40000, 50000]
 
@@ -46,6 +47,8 @@ export default function PenggunaModal({ pengguna, onClose, onSaved }) {
     if (err) {
       setError(err.message)
     } else {
+      const aksi = isEdit ? 'Mengubah data pengguna air' : 'Menambah pengguna air'
+      logAktivitas(aksi, `${payload.nama} (tarif ${formatRupiah(payload.nominal_iuran)}/bln)`)
       onSaved()
       onClose()
     }

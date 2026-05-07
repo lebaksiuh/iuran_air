@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, KeyRound, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { logAktivitas } from '../../lib/logger'
 
 export default function GantiPasswordModal({ targetUser = null, onClose }) {
   const [newPassword, setNewPassword] = useState('')
@@ -31,6 +32,10 @@ export default function GantiPasswordModal({ targetUser = null, onClose }) {
         const { error: err } = await supabase.auth.updateUser({ password: newPassword })
         if (err) throw err
       }
+      logAktivitas(
+        isAdminReset ? 'Mereset password akun user' : 'Mengubah password akun',
+        isAdminReset ? targetUser.nama : null
+      )
       setSuccess(true)
     } catch (err) {
       setError(err.message || 'Gagal menyimpan password.')

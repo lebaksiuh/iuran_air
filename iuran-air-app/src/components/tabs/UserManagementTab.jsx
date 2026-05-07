@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Pencil, Trash2, Info, KeyRound, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { ROLE_LABEL, ROLE_COLOR } from '../../lib/format'
+import { logAktivitas } from '../../lib/logger'
 import { useAuth } from '../../contexts/AuthContext'
 import UserModal from '../modals/UserModal'
 import GantiPasswordModal from '../modals/GantiPasswordModal'
@@ -33,7 +34,9 @@ export default function UserManagementTab() {
   async function handleDelete(userId, nama) {
     if (userId === currentUser.id) return alert('Tidak bisa hapus akun sendiri.')
     if (!confirm(`Hapus user "${nama}"?`)) return
+    const target = users.find(u => u.id === userId)
     await supabase.from('profiles').delete().eq('id', userId)
+    logAktivitas('Menghapus akun user', `${nama} (role: ${ROLE_LABEL[target?.role]})`)
     fetchData()
   }
 

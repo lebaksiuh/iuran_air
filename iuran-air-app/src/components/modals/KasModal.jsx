@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { logAktivitas } from '../../lib/logger'
+import { formatRupiah } from '../../lib/format'
 
 export default function KasModal({ type, item, onClose, onSaved }) {
   const table = type === 'pemasukan' ? 'pemasukan' : 'pengeluaran'
@@ -22,7 +24,12 @@ export default function KasModal({ type, item, onClose, onSaved }) {
       ? await supabase.from(table).update(payload).eq('id', item.id)
       : await supabase.from(table).insert(payload)
     if (err) setError(err.message)
-    else { onSaved(); onClose() }
+    else {
+      const jenis = type === 'pemasukan' ? 'pemasukan' : 'pengeluaran'
+      const aksi = isEdit ? 'Mengubah' : 'Mencatat'
+      logAktivitas(`${aksi} ${jenis}`, `${payload.keterangan} (${formatRupiah(payload.nominal)})`)
+      onSaved(); onClose()
+    }
     setLoading(false)
   }
 

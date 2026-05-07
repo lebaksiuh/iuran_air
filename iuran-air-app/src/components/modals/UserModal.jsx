@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { ROLE_LABEL } from '../../lib/format'
+import { logAktivitas } from '../../lib/logger'
 
 const ROLES = ['ketua_rt', 'bendahara', 'penagih', 'anggota']
 
@@ -55,6 +56,7 @@ export default function UserModal({ user, pengguna, onClose, onSaved }) {
       if (err) { setError(err.message); setLoading(false); return }
     }
 
+    logAktivitas('Mengubah profil akun user', `${form.nama.trim()} (role: ${ROLE_LABEL[form.role]})`)
     onSaved()
     onClose()
     setLoading(false)

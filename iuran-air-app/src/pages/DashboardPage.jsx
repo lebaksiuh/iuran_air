@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, Droplets, TrendingUp, TrendingDown, BarChart2, UserCog } from 'lucide-react'
+import { Users, Droplets, TrendingUp, TrendingDown, BarChart2, UserCog, Activity } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import PenggunaTab from '../components/tabs/PenggunaTab'
 import IuranTab from '../components/tabs/IuranTab'
@@ -7,6 +7,7 @@ import PemasukanTab from '../components/tabs/PemasukanTab'
 import PengeluaranTab from '../components/tabs/PengeluaranTab'
 import LaporanTab from '../components/tabs/LaporanTab'
 import UserManagementTab from '../components/tabs/UserManagementTab'
+import LogAktivitasTab from '../components/tabs/LogAktivitasTab'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function DashboardPage() {
@@ -20,6 +21,7 @@ export default function DashboardPage() {
     { id: 'pengeluaran', label: 'Pengeluaran', icon: TrendingDown, show: isAdmin },
     { id: 'laporan', label: 'Laporan', icon: BarChart2, show: isAdmin },
     { id: 'users', label: 'Kelola User', icon: UserCog, show: isAdmin },
+    { id: 'log', label: 'Log Aktivitas', icon: Activity, show: isAdmin },
   ].filter(t => t.show)
 
   return (
@@ -49,6 +51,7 @@ export default function DashboardPage() {
         {activeTab === 'pengeluaran' && <PengeluaranTab />}
         {activeTab === 'laporan' && <LaporanTab />}
         {activeTab === 'users' && <UserManagementTab />}
+        {activeTab === 'log' && <LogAktivitasTab />}
       </main>
     </div>
   )

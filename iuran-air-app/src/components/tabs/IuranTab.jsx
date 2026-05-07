@@ -5,6 +5,7 @@ import { BULAN_IURAN, formatRupiah } from '../../lib/format'
 import BayarModal from '../modals/BayarModal'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { logAktivitas } from '../../lib/logger'
 
 // Hitung bulan-bulan yang sudah berjalan di tahun iuran ini
 function getBulanSudahBerjalan(tahunAktif) {
@@ -125,6 +126,7 @@ export default function IuranTab() {
     })
 
     doc.save(`rekap-iuran-air-${labelTahun}.pdf`)
+    logAktivitas('Mengekspor PDF rekap iuran', `Tahun ${labelTahun}`)
   }
 
   return (

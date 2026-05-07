@@ -3,6 +3,7 @@ import { Plus, Search, Pencil, Trash2, UserCheck, UserX } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { formatRupiah } from '../../lib/format'
 import PenggunaModal from '../modals/PenggunaModal'
+import { logAktivitas } from '../../lib/logger'
 
 export default function PenggunaTab() {
   const [data, setData] = useState([])
@@ -25,6 +26,7 @@ export default function PenggunaTab() {
   async function handleDelete(id, nama) {
     if (!confirm(`Hapus pengguna "${nama}"? Data pembayarannya juga akan terhapus.`)) return
     await supabase.from('pengguna').delete().eq('id', id)
+    logAktivitas('Menghapus pengguna air', nama)
     fetchData()
   }
 

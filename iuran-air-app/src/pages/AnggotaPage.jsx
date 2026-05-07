@@ -6,6 +6,7 @@ import { formatRupiah, BULAN_IURAN, ROLE_LABEL, ROLE_COLOR } from '../lib/format
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import GantiPasswordModal from '../components/modals/GantiPasswordModal'
+import { logAktivitas } from '../lib/logger'
 
 export default function AnggotaPage() {
   const { profile, signOut } = useAuth()
@@ -129,6 +130,7 @@ export default function AnggotaPage() {
     doc.text(formatRupiah(totalBayar), W - 16, finalY + 20, { align: 'right' })
 
     doc.save(`kartu-iuran-${nama.toLowerCase().replace(/\s+/g, '-')}-${tahunAktif.tahun_mulai}.pdf`)
+    logAktivitas('Mengunduh kartu iuran', `Tahun ${tahunAktif.tahun_mulai}–${tahunAktif.tahun_selesai}`)
   }
 
   if (!profile?.pengguna_id) {

@@ -3,6 +3,7 @@ import { X, CheckCircle2, Pencil, Trash2, Check, XCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { BULAN_IURAN, formatRupiah } from '../../lib/format'
 import { useAuth } from '../../contexts/AuthContext'
+import { logAktivitas } from '../../lib/logger'
 
 export default function BayarModal({ pengguna, tahunIuran, onClose, onSaved }) {
   const { isAdmin } = useAuth()
@@ -50,7 +51,11 @@ export default function BayarModal({ pengguna, tahunIuran, onClose, onSaved }) {
     }))
     const { error: err } = await supabase.from('pembayaran').insert(rows)
     if (err) setError(err.message)
-    else { onSaved(); onClose() }
+    else {
+      const bulanNames = [...selected].map(b => BULAN_IURAN.find(x => x.bulan === b)?.nama).join(', ')
+      logAktivitas('Mencatat pembayaran', `${bulanNames} untuk ${pengguna.nama} (${formatRupiah(totalBayar)})`)
+      onSaved(); onClose()
+    }
     setSaving(false)
   }
 
@@ -67,6 +72,8 @@ export default function BayarModal({ pengguna, tahunIuran, onClose, onSaved }) {
       .update({ nominal })
       .eq('id', lunasMap[bulan].id)
     if (!err) {
+      const namaBulan = BULAN_IURAN.find(x => x.bulan === bulan)?.nama
+      logAktivitas('Mengubah nominal pembayaran', `${namaBulan} untuk ${pengguna.nama}: Rp ${lunasMap[bulan].nominal} → Rp ${nominal}`)
       await fetchPembayaran()
       setEditBulan(null)
       onSaved()
@@ -80,6 +87,7 @@ export default function BayarModal({ pengguna, tahunIuran, onClose, onSaved }) {
       .delete()
       .eq('id', lunasMap[bulan].id)
     if (!err) {
+      logAktivitas('Menghapus pembayaran', `${namaBulan} untuk ${pengguna.nama}`)
       await fetchPembayaran()
       onSaved()
     }

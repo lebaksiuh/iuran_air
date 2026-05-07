@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { logAktivitas } from '../lib/logger'
 
 const AuthContext = createContext(null)
 
@@ -35,10 +36,12 @@ export function AuthProvider({ children }) {
 
   async function signIn(email, password) {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (!error) logAktivitas('Masuk ke aplikasi')
     return error
   }
 
   async function signOut() {
+    await logAktivitas('Keluar dari aplikasi')
     await supabase.auth.signOut()
   }
 
