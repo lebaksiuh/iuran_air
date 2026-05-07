@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Pencil, Trash2, Info } from 'lucide-react'
+import { Pencil, Trash2, Info, KeyRound } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { ROLE_LABEL, ROLE_COLOR } from '../../lib/format'
 import { useAuth } from '../../contexts/AuthContext'
 import UserModal from '../modals/UserModal'
+import GantiPasswordModal from '../modals/GantiPasswordModal'
 
 export default function UserManagementTab() {
   const { user: currentUser } = useAuth()
@@ -11,6 +12,7 @@ export default function UserManagementTab() {
   const [pengguna, setPengguna] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(null)
+  const [resetModal, setResetModal] = useState(null)
 
   async function fetchData() {
     setLoading(true)
@@ -97,6 +99,11 @@ export default function UserManagementTab() {
                       title="Edit role / hubungkan pengguna">
                       <Pencil size={14} />
                     </button>
+                    <button onClick={() => setResetModal(u)}
+                      className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                      title="Reset password">
+                      <KeyRound size={14} />
+                    </button>
                     <button onClick={() => handleDelete(u.id, u.nama)}
                       disabled={u.id === currentUser?.id}
                       className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -117,6 +124,13 @@ export default function UserManagementTab() {
           pengguna={pengguna}
           onClose={() => setModal(null)}
           onSaved={fetchData}
+        />
+      )}
+
+      {resetModal && (
+        <GantiPasswordModal
+          targetUser={resetModal}
+          onClose={() => setResetModal(null)}
         />
       )}
     </div>

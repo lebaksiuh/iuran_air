@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Droplets, LogOut, CheckCircle2, XCircle, ChevronDown, Download } from 'lucide-react'
+import { Droplets, LogOut, CheckCircle2, XCircle, ChevronDown, Download, KeyRound } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { formatRupiah, BULAN_IURAN, ROLE_LABEL, ROLE_COLOR } from '../lib/format'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import GantiPasswordModal from '../components/modals/GantiPasswordModal'
 
 export default function AnggotaPage() {
   const { profile, signOut } = useAuth()
@@ -12,6 +13,7 @@ export default function AnggotaPage() {
   const [tahunAktif, setTahunAktif] = useState(null)
   const [pembayaran, setPembayaran] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showGantiPassword, setShowGantiPassword] = useState(false)
 
   useEffect(() => {
     supabase.from('tahun_iuran').select('*').order('tahun_mulai', { ascending: false })
@@ -167,6 +169,11 @@ export default function AnggotaPage() {
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLOR[profile?.role]}`}>
               {ROLE_LABEL[profile?.role]}
             </span>
+            <button onClick={() => setShowGantiPassword(true)}
+              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Ganti Password">
+              <KeyRound size={16} />
+            </button>
             <button onClick={signOut} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
               <LogOut size={16} />
             </button>
@@ -278,6 +285,10 @@ export default function AnggotaPage() {
 
         <p className="text-center text-xs text-gray-300 pb-2">Iuran Air &copy; {new Date().getFullYear()}</p>
       </main>
+
+      {showGantiPassword && (
+        <GantiPasswordModal onClose={() => setShowGantiPassword(false)} />
+      )}
     </div>
   )
 }
