@@ -11,22 +11,28 @@ export default function LaporanTab() {
 
   useEffect(() => {
     async function fetchData() {
-      const [{ data: tahun }, { data: pembayaran }, { data: pemasukan }, { data: pengeluaran }] = await Promise.all([
+      const [{ data: tahun }, { data: pemasukan }, { data: pengeluaran }] = await Promise.all([
         supabase.from('tahun_iuran').select('*').order('tahun_mulai'),
-        supabase.from('pembayaran').select('tahun_iuran_id, nominal').limit(10000),
         supabase.from('pemasukan').select('nominal'),
         supabase.from('pengeluaran').select('nominal'),
       ])
 
       setTahunList(tahun || [])
-
-      const map = {}
-      ;(pembayaran || []).forEach(p => {
-        map[p.tahun_iuran_id] = (map[p.tahun_iuran_id] || 0) + p.nominal
-      })
-      setIuranPerTahun(map)
       setTotalPemasukan((pemasukan || []).reduce((a, b) => a + b.nominal, 0))
       setTotalPengeluaran((pengeluaran || []).reduce((a, b) => a + b.nominal, 0))
+
+      // Fetch per tahun (filter by ID) to avoid server row-limit on bulk fetch
+      const map = {}
+      if (tahun?.length) {
+        const results = await Promise.all(
+          tahun.map(t =>
+            supabase.from('pembayaran').select('nominal').eq('tahun_iuran_id', t.id)
+              .then(({ data }) => ({ id: t.id, total: (data || []).reduce((a, b) => a + b.nominal, 0) }))
+          )
+        )
+        results.forEach(r => { map[r.id] = r.total })
+      }
+      setIuranPerTahun(map)
       setLoading(false)
     }
     fetchData()
